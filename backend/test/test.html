@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register User - Direct Test</title>
+</head>
+<body>
+    <h1>Direct Registration Test</h1>
+    <button onclick="registerUser()">Register Khagendra</button>
+    <div id="result"></div>
+
+    <script>
+    function registerUser() {
+        document.getElementById('result').innerHTML = 'Registering...';
+        
+        const userData = {
+            name: "khagendra",
+            email: "joshikhagendra83@gmail.com",
+            phone: "+9868807315",
+            password: "Khags@123"
+        };
+
+        fetch('http://localhost:5000/api/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.text();
+        })
+        .then(data => {
+            console.log('Raw response:', data);
+            document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('result').innerHTML = 'Error: ' + error;
+        });
+    }
+    </script>
+</body>
+</html>
