@@ -18,6 +18,7 @@ CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('user','moderator', 'admin','super_admin') DEFAULT 'user',
     is_verified BOOLEAN DEFAULT FALSE,
@@ -228,75 +229,31 @@ CREATE TABLE blocked_users (
 -- ===================================================
 CREATE TABLE system_settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    
-    -- General
-    platform_name VARCHAR(100) DEFAULT 'FAD',
-    platform_description VARCHAR(100) DEFAULT 'Followers Advertisement Platform',
-    default_currency VARCHAR(10) DEFAULT 'NPR',
-    timezone VARCHAR(50) DEFAULT 'Asia/Kathmandu',
-    
-    -- Security
-    daily_ad_limit INT DEFAULT 20,
-    min_view_duration INT DEFAULT 15,
-    cost_per_view DECIMAL(10,2) DEFAULT 1.00,
-    ip_tracking_enabled BOOLEAN DEFAULT TRUE,
-    multiple_account_detection BOOLEAN DEFAULT TRUE,
-    two_factor_auth BOOLEAN DEFAULT FALSE,
-    login_notification BOOLEAN DEFAULT FALSE,
-    anti_fraud_detection BOOLEAN DEFAULT TRUE,
-    
-    -- System
-    minimum_withdrawal INT DEFAULT 1000,
-    session_timeout INT DEFAULT 30,
-    backup_frequency VARCHAR(20) DEFAULT 'daily',
-    maintenance_mode BOOLEAN DEFAULT FALSE,
-    referral_bonus INT DEFAULT 10,
-    
-    -- Audit fields
-    updated_by INT,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT NULL,
+    description TEXT NULL,
+    category VARCHAR(50) DEFAULT 'general',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-INSERT INTO system_settings (
-    platform_name,
-    platform_description,
-    default_currency,
-    timezone,
-    daily_ad_limit,
-    min_view_duration,
-    cost_per_view,
-    ip_tracking_enabled,
-    multiple_account_detection,
-    two_factor_auth,
-    login_notification,
-    anti_fraud_detection,
-    api_rate_limit,
-    session_timeout,
-    backup_frequency,
-    maintenance_mode,
-    updated_by
-) VALUES (
-    'FAD',
-    'Followers Advertisement Platform',
-    'NPR',
-    'Asia/Kathmandu',
-    20,
-    15,
-    1.00,
-    TRUE,
-    TRUE,
-    FALSE,
-    FALSE,
-    TRUE,
-    1000,
-    30,
-    'daily',
-    FALSE,
-    NULL
-);
+INSERT INTO system_settings (setting_key, setting_value, description, category) VALUES
+('platform_name', 'FAD', 'Name of the platform', 'general'),
+('platform_description', 'Followers Advertisement Platform', 'Short platform description', 'general'),
+('default_currency', 'NPR', 'Primary currency symbol or code', 'general'),
+('timezone', 'Asia/Kathmandu', 'System operational timezone', 'general'),
+('daily_ad_limit', '20', 'Maximum ads a single user can watch daily', 'ads'),
+('min_view_duration', '15', 'Minimum seconds required to claim reward', 'ads'),
+('cost_per_view', '1.00', 'Default base reward per valid view', 'ads'),
+('ip_tracking_enabled', 'TRUE', 'Enable/Disable tracking IP access history', 'security'),
+('multiple_account_detection', 'TRUE', 'Check device signatures for multi-accounts', 'security'),
+('two_factor_auth', 'FALSE', 'Enforce 2FA checks globally', 'security'),
+('login_notification', 'FALSE', 'Send alerts on strange login locations', 'security'),
+('anti_fraud_detection', 'TRUE', 'Enable automatic context fraud algorithms', 'security'),
+('api_rate_limit', '1000', 'Maximum requests permitted per window frame', 'security'),
+('session_timeout', '30', 'Inactivity timeout duration in minutes', 'security'),
+('backup_frequency', 'daily', 'Automated backup structural intervals', 'maintenance'),
+('maintenance_mode', 'FALSE', 'Take application completely offline for users', 'maintenance');
 
 
 
