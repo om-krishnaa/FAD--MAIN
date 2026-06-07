@@ -1,32 +1,75 @@
-import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Link, router } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { apiRequest } from '@/lib/api';
 
 export default function ForgotPasswordScreen() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleRequestReset() {
+    if (!email) {
+      Alert.alert('Missing email', 'Please enter your email address.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const data = await apiRequest('/auth/request-reset', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+
+      if (!data.success) {
+        Alert.alert('Reset failed', data.message || 'Something went wrong.');
+        return;
+      }
+
+      Alert.alert('Code sent', data.message || 'Reset code sent to your email.');
+      router.push({
+        pathname: '/reset-password',
+        params: { email },
+      });
+    } catch {
+      Alert.alert('Error', 'Could not connect to server.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>FAD</Text>
-      <Text style={styles.title}>Reset password</Text>
-      <Text style={styles.subtitle}>
-        Enter your email to receive a reset code
-      </Text>
+      <View style={styles.card}>
+        <Text style={styles.logo}>FAD</Text>
+        <Text style={styles.title}>Reset Password</Text>
+        <Text style={styles.subtitle}>
+          Enter your email to receive a reset code
+        </Text>
 
-      <View style={styles.form}>
+        <View style={styles.form}>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
             placeholder="Enter your email"
             keyboardType="email-address"
             autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
             style={styles.input}
             placeholderTextColor="#94a3b8"
           />
         </View>
 
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Send Reset Code</Text>
+        <Pressable style={styles.button} onPress={handleRequestReset} disabled={loading}>
+          <Text style={styles.buttonText}>
+            {loading ? 'Sending...' : 'Send Reset Code'}
+          </Text>
         </Pressable>
 
-        <Link href="/reset-password" style={styles.linkButton}>
+        <Link
+          href={{ pathname: '/reset-password', params: { email } }}
+          style={styles.linkButton}>
           I already have a code
         </Link>
 
@@ -35,6 +78,7 @@ export default function ForgotPasswordScreen() {
           <Link href="/login" style={styles.link}>
             Login
           </Link>
+        </View>
         </View>
       </View>
     </View>
@@ -46,26 +90,33 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#111827',
+  },
+  card: {
+    padding: 28,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   logo: {
     fontSize: 42,
     fontWeight: '900',
-    color: '#2563eb',
+    color: '#3b82f6',
     textAlign: 'center',
-    marginBottom: 18,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#3b82f6',
     textAlign: 'center',
   },
   subtitle: {
     marginTop: 8,
     marginBottom: 32,
     fontSize: 15,
-    color: '#64748b',
+    color: '#d1d5db',
     textAlign: 'center',
   },
   form: {
@@ -77,14 +128,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#334155',
+    color: '#d1d5db',
   },
   input: {
     height: 52,
     paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#6b7280',
     backgroundColor: '#ffffff',
     fontSize: 16,
     color: '#0f172a',
@@ -106,7 +157,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 15,
     fontWeight: '800',
-    color: '#2563eb',
+    color: '#60a5fa',
   },
   footer: {
     marginTop: 8,
@@ -115,10 +166,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   footerText: {
-    color: '#64748b',
+    color: '#d1d5db',
   },
   link: {
     fontWeight: '800',
-    color: '#2563eb',
+    color: '#60a5fa',
   },
 });

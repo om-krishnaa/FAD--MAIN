@@ -43,11 +43,12 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>FAD</Text>
-      <Text style={styles.title}>Login to your account</Text>
-      <Text style={styles.subtitle}>Continue earning through available ads</Text>
+      <View style={styles.card}>
+        <Text style={styles.logo}>FAD</Text>
+        <Text style={styles.title}>FAD Admin Login</Text>
+        <Text style={styles.subtitle}>Followers of Advertisement</Text>
 
-      <View style={styles.form}>
+        <View style={styles.form}>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -90,7 +91,7 @@ export default function LoginScreen() {
             Forgot password?
           </Link>
         </View>
-        
+        </View>
       </View>
     </View>
   );
@@ -101,31 +102,38 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#111827',
+  },
+  card: {
+    padding: 28,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   forgotLink: {
     textAlign: 'center',
     fontWeight: '700',
-    color: '#2563eb',
+    color: '#60a5fa',
   },
   logo: {
     fontSize: 42,
     fontWeight: '900',
-    color: '#2563eb',
+    color: '#3b82f6',
     textAlign: 'center',
-    marginBottom: 18,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#3b82f6',
     textAlign: 'center',
   },
   subtitle: {
     marginTop: 8,
     marginBottom: 32,
     fontSize: 15,
-    color: '#64748b',
+    color: '#d1d5db',
     textAlign: 'center',
   },
   form: {
@@ -137,14 +145,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#334155',
+    color: '#d1d5db',
   },
   input: {
     height: 52,
     paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#6b7280',
     backgroundColor: '#ffffff',
     fontSize: 16,
     color: '#0f172a',
@@ -169,10 +177,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   footerText: {
-    color: '#64748b',
+    color: '#d1d5db',
   },
   link: {
     fontWeight: '800',
-    color: '#2563eb',
+    color: '#60a5fa',
   },
 });

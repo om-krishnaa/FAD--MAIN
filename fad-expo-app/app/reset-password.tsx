@@ -1,22 +1,66 @@
-import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Link, router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { apiRequest } from '@/lib/api';
 
 export default function ResetPasswordScreen() {
+  const params = useLocalSearchParams<{ email?: string }>();
+  const [email, setEmail] = useState(params.email || '');
+  const [token, setToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleResetPassword() {
+    if (!email || !token || !newPassword) {
+      Alert.alert('Missing fields', 'Please enter email, code, and new password.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const data = await apiRequest('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ email, token, newPassword }),
+      });
+
+      if (!data.success) {
+        Alert.alert('Reset failed', data.message || 'Something went wrong.');
+        return;
+      }
+
+      Alert.alert('Success', data.message || 'Password reset successful.');
+      router.replace('/login');
+    } catch {
+      Alert.alert('Error', 'Could not connect to server.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>FAD</Text>
-      <Text style={styles.title}>Create new password</Text>
-      <Text style={styles.subtitle}>
-        Enter the reset code and your new password
-      </Text>
+      <View style={styles.card}>
+        <Text style={styles.logo}>FAD</Text>
+        <Text style={styles.title}>Enter Reset Code</Text>
+        <Text style={styles.subtitle}>
+          Enter the reset code and your new password
+        </Text>
 
-      <View style={styles.form}>
+        <View style={styles.form}>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
             placeholder="Enter your email"
             keyboardType="email-address"
             autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
             style={styles.input}
             placeholderTextColor="#94a3b8"
           />
@@ -27,6 +71,9 @@ export default function ResetPasswordScreen() {
           <TextInput
             placeholder="Enter reset code"
             keyboardType="number-pad"
+            value={token}
+            onChangeText={setToken}
+            maxLength={6}
             style={styles.input}
             placeholderTextColor="#94a3b8"
           />
@@ -37,13 +84,17 @@ export default function ResetPasswordScreen() {
           <TextInput
             placeholder="Enter new password"
             secureTextEntry
+            value={newPassword}
+            onChangeText={setNewPassword}
             style={styles.input}
             placeholderTextColor="#94a3b8"
           />
         </View>
 
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Update Password</Text>
+        <Pressable style={styles.button} onPress={handleResetPassword} disabled={loading}>
+          <Text style={styles.buttonText}>
+            {loading ? 'Updating...' : 'Update Password'}
+          </Text>
         </Pressable>
 
         <View style={styles.footer}>
@@ -51,6 +102,7 @@ export default function ResetPasswordScreen() {
           <Link href="/login" style={styles.link}>
             Login
           </Link>
+        </View>
         </View>
       </View>
     </View>
@@ -62,26 +114,33 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#111827',
+  },
+  card: {
+    padding: 28,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   logo: {
     fontSize: 42,
     fontWeight: '900',
-    color: '#2563eb',
+    color: '#3b82f6',
     textAlign: 'center',
-    marginBottom: 18,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#3b82f6',
     textAlign: 'center',
   },
   subtitle: {
     marginTop: 8,
     marginBottom: 32,
     fontSize: 15,
-    color: '#64748b',
+    color: '#d1d5db',
     textAlign: 'center',
   },
   form: {
@@ -93,14 +152,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#334155',
+    color: '#d1d5db',
   },
   input: {
     height: 52,
     paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#6b7280',
     backgroundColor: '#ffffff',
     fontSize: 16,
     color: '#0f172a',
@@ -125,10 +184,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   footerText: {
-    color: '#64748b',
+    color: '#d1d5db',
   },
   link: {
     fontWeight: '800',
-    color: '#2563eb',
+    color: '#60a5fa',
   },
 });
