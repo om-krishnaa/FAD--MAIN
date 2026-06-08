@@ -20,6 +20,12 @@ const MAPPING = {
   'megaphone.fill': 'campaign',
   'creditcard.fill': 'credit-card',
   'person.fill': 'person',
+  'chart.bar.fill': 'bar-chart',
+  'doc.text.fill': 'description',
+  'gearshape.fill': 'settings',
+  'shield.fill': 'security',
+  'person.2.fill': 'group',
+  'bell.fill': 'notifications',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as IconMapping;
