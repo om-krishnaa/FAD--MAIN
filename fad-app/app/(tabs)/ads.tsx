@@ -12,6 +12,7 @@ import {
 import { useFocusEffect } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
+import { WebView } from 'react-native-webview';
 
 import AppButton from '@/common/AppButton';
 import AppInput from '@/common/AppInput';
@@ -41,6 +42,8 @@ export default function AdsScreen() {
   const [selectedAsset, setSelectedAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [costPerView, setCostPerView] = useState(2);
 
+    const [paymentHtml, setPaymentHtml] = useState('');
+const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   async function loadAds() {
     const token = await SecureStore.getItemAsync('fad_token');
     if (!token) return;
@@ -119,25 +122,39 @@ export default function AdsScreen() {
   }
 
   // Mimics web version: handles eSewa response parameters by encoding query string parameters
-  const makePaymentViaEsewa = (formData: any) => {
-    const baseUrl = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
-    const queryParams = Object.keys(formData)
-      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(formData[key])}`)
-      .join('&');
-    
-    const targetUrl = `${baseUrl}?${queryParams}`;
-    Linking.openURL(targetUrl).catch(() => {
-      Alert.alert('Error', 'Unable to redirect to eSewa payment screen.');
-    });
-  };
+const makePaymentViaEsewa = (formData: any) => {
+  const fields = Object.keys(formData)
+    .map(
+      (key) =>
+        `<input type="hidden" name="${key}" value="${String(formData[key]).replace(/"/g, '&quot;')}" />`
+    )
+    .join('');
 
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <body onload="document.forms[0].submit()">
+        <form method="POST" action="https://rc-epay.esewa.com.np/api/epay/main/v2/form">
+          ${fields}
+        </form>
+      </body>
+    </html>
+  `;
+
+  setPaymentHtml(html);
+  setPaymentModalVisible(true);
+};
   // Mimics web version: Khalti direct redirection layout
-  const makePaymentViaKhalti = (redirectUrl: string) => {
-    if (!redirectUrl) return;
-    Linking.openURL(redirectUrl).catch(() => {
-      Alert.alert('Error', 'Unable to redirect to Khalti portal.');
-    });
-  };
+const makePaymentViaKhalti = (redirectUrl: string) => {
+  if (!redirectUrl) {
+    Alert.alert('Error', 'Khalti payment URL was not received.');
+    return;
+  }
+
+  Linking.openURL(redirectUrl).catch(() => {
+    Alert.alert('Error', 'Unable to redirect to Khalti portal.');
+  });
+};
 
   async function handlePickAsset() {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -466,6 +483,53 @@ export default function AdsScreen() {
           </View>
         </View>
       </Modal>
+      <Modal
+  visible={paymentModalVisible}
+  animationType="slide"
+  onRequestClose={() => setPaymentModalVisible(false)}
+>
+  <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+    <View
+      style={{
+        paddingTop: 44,
+        paddingHorizontal: 14,
+        paddingBottom: 10,
+        backgroundColor: '#111827',
+      }}
+    >
+      <AppButton
+        title="Close Payment"
+        variant="secondary"
+        onPress={() => {
+          setPaymentModalVisible(false);
+          setPaymentHtml('');
+          loadAds();
+        }}
+      />
+    </View>
+
+    <WebView
+      originWhitelist={['*']}
+      source={{ html: paymentHtml }}
+      javaScriptEnabled
+      domStorageEnabled
+      startInLoadingState
+      onNavigationStateChange={(navState) => {
+        if (
+          navState.url.includes('/api/webhook/esewa/success') ||
+          navState.url.includes('/api/webhook/khalti/callback') ||
+          navState.url === 'http://192.168.1.80:5173/' ||
+          navState.url === 'http://192.168.1.80:5173'
+        ) {
+          setPaymentModalVisible(false);
+          setPaymentHtml('');
+          loadAds();
+          Alert.alert('Payment Complete', 'Ad payment was processed.');
+        }
+      }}
+    />
+  </View>
+</Modal>
     </Screen>
   );
 }

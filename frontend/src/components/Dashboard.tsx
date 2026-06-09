@@ -33,11 +33,12 @@ const Dashboard = () => {
       iconColor: 'text-green-600 dark:text-green-400',
     },
     {
-      title: user!.role === 'super_admin' ? 'Total Revenue' : 'Total Budget',
+      title:'Total Budget',
       value: analytics ? `Rs ${analytics.totalRevenue}` : '-',
       icon: DollarSign,
       bgColor: 'bg-purple-50 dark:bg-purple-900',
       iconColor: 'text-purple-600 dark:text-purple-400',
+      hidden: user!.role !== 'super_admin',
     },
     {
       title: 'Ad Views Today',
